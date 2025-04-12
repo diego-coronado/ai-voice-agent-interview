@@ -26,10 +26,10 @@ export async function signUp(params: SignUpParams) {
       success: true,
       message: "Account created successfully. Please sign in.",
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Error creating a user", e);
 
-    if (e.code === "auth/emai-already-exists") {
+    if ((e as { code: string }).code === "auth/emai-already-exists") {
       return {
         success: false,
         message: "This email is already in use.",
@@ -55,7 +55,7 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
 
     return {
