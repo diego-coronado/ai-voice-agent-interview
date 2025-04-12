@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/interview.action";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -86,10 +87,32 @@ const Agent = ({
       setLastMessage(messages[messages.length - 1].content);
     }
 
+    const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+      console.log("handleGenerateFeedback");
+
+      const { success, feedbackId: id } = await createFeedback({
+        interviewId: interviewId!,
+        userId: userId!,
+        transcript: messages,
+        feedbackId,
+      });
+
+      if (success && id) {
+        router.push(`/interview/${interviewId}/feedback`);
+      } else {
+        console.log("Error saving feedback");
+        router.push("/");
+      }
+    };
+
     if (callStatus === CallStatus.FINISHED) {
-      router.push("/");
+      if (type === "generate") {
+        router.push("/");
+      } else {
+        handleGenerateFeedback(messages);
+      }
     }
-  }, [messages, callStatus, router, type, userId]);
+  }, [messages, callStatus, router, type, userId, interviewId, feedbackId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
